@@ -92,9 +92,9 @@ for link in soup.findAll('a', attrs={'href': re.compile("/pubmed/")}):
 # CSV writer
 import csv
 
-with open('email.csv') as email_file:
-    email_writer = csv.writer(email_file, delimiter=', ')
+with open('email.csv', 'w') as email_file:
+    email_writer = csv.writer(email_file, delimiter=',')
 
     for el in email:
-        email_writer.writerow(el)
+        email_writer.writerow([el])
 
