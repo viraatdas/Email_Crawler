@@ -68,11 +68,10 @@ journ_key = set()
 url = "https://www.ncbi.nlm.nih.gov/pubmed/"
 html_page = urlopen(url + "?term=lncrna")
 
-soup_obj = BeautifulSoup(html_page)
+soup = BeautifulSoup(html_page)
 slice_len = len("/pubmed/")
 
-for
-for link in soup_obj.findAll('a', attrs={'href': re.compile("/pubmed/")}):
+for link in soup.findAll('a', attrs={'href': re.compile("/pubmed/")}):
     key = link.get('href')[slice_len:]
     try:
         key = int(key)
@@ -89,4 +88,13 @@ for link in soup_obj.findAll('a', attrs={'href': re.compile("/pubmed/")}):
     # extract all email addresses and add them into the resulting set
     new_emails = set(re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", response.text, re.I))
     email.update(new_emails)
+
+# CSV writer
+import csv
+
+with open('email.csv') as email_file:
+    email_writer = csv.writer(email_file, delimiter=', ')
+
+    for el in email:
+        email_writer.writerow(el)
 
