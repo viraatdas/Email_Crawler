@@ -1,93 +1,76 @@
 from bs4 import BeautifulSoup
-import requests
-import requests.exceptions
-from urllib.parse import urlsplit
-from collections import deque
-import re
-
-# # a queue of urls to be crawled
-#
-# new_urls = deque(['https://www.ncbi.nlm.nih.gov/pubmed/?term=lncrna'])
-#
-# # a set of urls that we have already crawled
-# processed_urls = set()
-#
-# # a set of crawled emails
-# emails = set()
-#
-# # process urls one by one until we exhaust the queue
-# while len(new_urls):
-#
-#     # move next url from the queue to the set of processed urls
-#     url = new_urls.popleft()
-#     processed_urls.add(url)
-#
-#     # extract base url to resolve relative links
-#     parts = urlsplit(url)
-#     base_url = url
-#     path = url[:url.rfind('/') + 1] if '/' in parts.path else url
-#
-#     # get url's content
-#     print("Processing %s" % url)
-#     try:
-#         response = requests.get(url)
-#     except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError):
-#         # ignore pages with errors
-#         continue
-#
-#     # extract all email addresses and add them into the resulting set
-#     new_emails = set(re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", response.text, re.I))
-#     emails.update(new_emails)
-#
-#     # create a beutiful soup for the html document
-#     soup = BeautifulSoup(response.text, features="lxml")
-#
-#     # find and process all the anchors in the document
-#     for anchor in soup.find_all("a"):
-#         # extract link url from the anchor
-#         link = anchor.attrs["href"] if "href" in anchor.attrs else ''
-#         # resolve relative links
-#         if link.startswith('/'):
-#             link = base_url + link
-#         elif not link.startswith('http'):
-#             link = path + link
-#         # add the new url to the queue if it was not enqueued nor processed yet
-#         if not link in new_urls and not link in processed_urls:
-#             new_urls.append(link)
-
-
-from bs4 import BeautifulSoup
 from urllib.request import urlopen
 import re
+import requests.exceptions
+import pickle
 
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
+import time
 
 term_key = ['lncrna', 'lincrna', 'ncrna', 'mrna']
 
-email = set()
-journ_key = set()
+email = pickle.load(open("curr_email.pkl", 'rb'))
 url = "https://www.ncbi.nlm.nih.gov/pubmed/"
-html_page = urlopen(url + "?term=lncrna")
+sleep_constant = 0.5
 
-soup = BeautifulSoup(html_page)
-slice_len = len("/pubmed/")
 
-for link in soup.findAll('a', attrs={'href': re.compile("/pubmed/")}):
-    key = link.get('href')[slice_len:]
-    try:
-        key = int(key)
-    except:
-        continue
-
-    new_url = url + str(key)
+def add_email(new_url):
     try:
         response = requests.get(new_url)
     except (requests.exceptions.MissingSchema, requests.exceptions.ConnectionError):
         # ignore pages with errors
-        continue
+        return
 
     # extract all email addresses and add them into the resulting set
     new_emails = set(re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", response.text, re.I))
     email.update(new_emails)
+
+# Returns name page as well as adds email to the set
+slice_len = len("/pubmed/")
+def get_page(soup):
+    for link in soup.findAll('a', attrs={'href': re.compile("/pubmed/")}):
+        key = link.get('href')[slice_len:]
+        try:
+            key = int(key)
+        except:
+            continue
+
+        new_url = url + str(key)
+        add_email(new_url)
+
+for term in term_key:
+    term_url = url + "?term=" + term
+    html_page = urlopen(term_url)
+
+    soup = BeautifulSoup(html_page)
+
+    # get num_page
+    for foo in soup.find_all('h3', attrs={'class': 'page'}):
+        bar = foo.find(attrs={'class': 'num'})
+        num_page = int(bar["last"])
+
+    get_page(soup)
+
+    # Navigating to next pages
+    browser = webdriver.Chrome("/Users/owner/Documents/chromedriver")
+
+    browser.get(term_url)
+    # Wait until page is loaded
+    time.sleep(sleep_constant)
+
+    next_button_id = "EntrezSystem2.PEntrez.PubMed.Pubmed_ResultsPanel.Pubmed_Pager.Page"
+    for page in range(2, num_page+1):
+        browser.find_element_by_id('pageno').clear()
+        input_el = browser.find_element_by_id("pageno")
+        input_el.send_keys(str(page))
+        input_el.send_keys(Keys.ENTER)
+        time.sleep(sleep_constant)
+
+        content = browser.page_source.encode('ascii', 'ignore').decode("utf-8")
+        get_page(BeautifulSoup(content))
+
 
 # CSV writer
 import csv
