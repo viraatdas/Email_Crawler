@@ -9,12 +9,13 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 import time
 
-term_key = ['lncrna', 'lincrna', 'ncrna', 'mrna']
-
+#term_key = ['lncrna', 'lincrna', 'ncrna', 'mrna']
+term_key = ['lncrna']
 email = pickle.load(open("curr_email.pkl", 'rb'))
 url = "https://www.ncbi.nlm.nih.gov/pubmed/"
-sleep_constant = 0.8
+sleep_constant = 0.7
 
+initial_start_page = 2
 # Config for web driver
 options = Options()
 options.headless = True
@@ -57,14 +58,14 @@ for term in term_key:
     get_page(soup)
 
     # Navigating to next pages
-    browser = webdriver.Chrome("/Users/owner/Documents/chromedriver", options=options)
+    browser = webdriver.Chrome(options=options)
 
     browser.get(term_url)
     # Wait until page is loaded
     time.sleep(sleep_constant)
 
     next_button_id = "EntrezSystem2.PEntrez.PubMed.Pubmed_ResultsPanel.Pubmed_Pager.Page"
-    for page in range(50, num_page+1):
+    for page in range(initial_start_page, num_page+1):
         if page % 10 == 0:
             pickle.dump(email, open("curr_email.pkl",'wb'))
 
