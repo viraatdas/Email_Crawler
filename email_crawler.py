@@ -19,7 +19,7 @@ initial_start_page = 2
 # Config for web driver
 options = Options()
 options.headless = True
-
+file1 = open("page indicator.txt","w") 
 def add_email(new_url):
     try:
         response = requests.get(new_url)
@@ -66,6 +66,7 @@ for term in term_key:
 
     next_button_id = "EntrezSystem2.PEntrez.PubMed.Pubmed_ResultsPanel.Pubmed_Pager.Page"
     for page in range(initial_start_page, num_page+1):
+	
         if page % 10 == 0:
             pickle.dump(email, open("curr_email.pkl",'wb'))
 
@@ -77,7 +78,7 @@ for term in term_key:
 
         content = browser.page_source.encode('ascii', 'ignore').decode("utf-8")
         get_page(BeautifulSoup(content))
-
+        file1.write(f'{term} {page}\n')
 
 # CSV writer
 import csv
