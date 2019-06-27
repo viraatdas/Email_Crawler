@@ -9,17 +9,17 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 import time
 
-#term_key = ['lncrna', 'lincrna', 'ncrna', 'mrna']
-term_key = ['lncrna']
-email = pickle.load(open("curr_email.pkl", 'rb'))
+term_key = ['ncrna', 'mrna']
+#term_key = ['lncrna']
+email = pickle.load(open("curr_email3.pkl",'rb'))
 url = "https://www.ncbi.nlm.nih.gov/pubmed/"
 sleep_constant = 0.7
 
-initial_start_page = 2
+initial_start_page = 500
 # Config for web driver
 options = Options()
 options.headless = True
-file1 = open("page indicator.txt","w") 
+file1 = open("page_indicator.txt","a") 
 def add_email(new_url):
     try:
         response = requests.get(new_url)
@@ -58,7 +58,7 @@ for term in term_key:
     get_page(soup)
 
     # Navigating to next pages
-    browser = webdriver.Chrome(options=options)
+    browser = webdriver.Chrome("/Users/owner/Documents/chromedriver", options=options)
 
     browser.get(term_url)
     # Wait until page is loaded
@@ -68,7 +68,7 @@ for term in term_key:
     for page in range(initial_start_page, num_page+1):
 	
         if page % 10 == 0:
-            pickle.dump(email, open("curr_email.pkl",'wb'))
+            pickle.dump(email, open("curr_email3.pkl",'wb'))
 
         browser.find_element_by_id('pageno').clear()
         input_el = browser.find_element_by_id("pageno")
@@ -83,7 +83,7 @@ for term in term_key:
 # CSV writer
 import csv
 
-with open('email.csv', 'w') as email_file:
+with open('email2.csv', 'w') as email_file:
     email_writer = csv.writer(email_file, delimiter=',')
 
     for el in email:
