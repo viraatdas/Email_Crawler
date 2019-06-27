@@ -15,7 +15,7 @@ email = pickle.load(open("curr_email3.pkl",'rb'))
 url = "https://www.ncbi.nlm.nih.gov/pubmed/"
 sleep_constant = 0.7
 
-initial_start_page = 500
+initial_start_page = 590
 # Config for web driver
 options = Options()
 options.headless = True
