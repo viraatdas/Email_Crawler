@@ -11,11 +11,11 @@ import time
 
 term_key = ['ncrna', 'mrna']
 #term_key = ['lncrna']
-email = pickle.load(open("curr_email3.pkl",'rb'))
+email = set()
 url = "https://www.ncbi.nlm.nih.gov/pubmed/"
 sleep_constant = 0.7
 
-initial_start_page = 590
+initial_start_page = 650
 # Config for web driver
 options = Options()
 options.headless = True
@@ -68,7 +68,7 @@ for term in term_key:
     for page in range(initial_start_page, num_page+1):
 	
         if page % 10 == 0:
-            pickle.dump(email, open("curr_email3.pkl",'wb'))
+            pickle.dump(email, open("curr_email.pkl",'wb'))
 
         browser.find_element_by_id('pageno').clear()
         input_el = browser.find_element_by_id("pageno")
