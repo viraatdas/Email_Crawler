@@ -9,7 +9,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 import time
 
-term_key = ['ncrna', 'mrna']
+term_key = ['ncrna', 'circrna']
 #term_key = ['lncrna']
 email = set()
 url = "https://www.ncbi.nlm.nih.gov/pubmed/"
